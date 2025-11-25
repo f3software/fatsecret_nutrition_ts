@@ -1,6 +1,6 @@
-# @fatsecret_nutrition/ts
+# fatsecret_nutrition
 
-TypeScript implementation of the FatSecret Nutrition SDK targeting React (web) and React Native. The goal is to mirror the public API exposed by the Dart package so teams can share knowledge and documentation across platforms.
+TypeScript implementation of the FatSecret Nutrition SDK targeting React (web) and React Native. 
 
 ## Status
 - ✅ Project scaffolding (TypeScript 5, tsup, Jest, ESLint).
@@ -56,6 +56,26 @@ npm run example
 The script hits `foods.autocomplete.v2`, `foods.search.v3`, `food.find_id_for_barcode`, and `food_categories.get.v2`. These are real API calls—watch your rate limits.
 Set `FATSECRET_AUTH_STRATEGY` to `client-credentials` (needs OAuth2 client ID/secret + scopes via `FATSECRET_SCOPES`, default `basic premier barcode`) or `oauth1` (needs consumer key/secret and optional access token). Some endpoints require premium scopes (`premier`, `barcode`, etc.); request those in the FatSecret portal if you see “Missing scope” errors.
 
+## Supported API Calls
+
+| Endpoint / Feature             | Status |
+| ------------------------------ | :----: |
+| Foods: Autocomplete (`foods.autocomplete.v2`) | ✅ |
+| Foods: Search (`foods.search.v3/v4`)          | ✅ |
+| Foods: Get by ID (`food.get.v4`)              | ✅ |
+| Food Brands: Get All (`food_brands.get.v2`)   | ✅ |
+| Food Categories: Get All (`food_categories.get.v2`) | ✅ |
+| Food Sub Categories (`food_sub_categories.get.v2`) | ✅ |
+| Food: Find ID for Barcode (`food.find_id_for_barcode.v2`) | ✅ |
+| Recipes: Get by ID (`recipe.get.v2`)          | ✅ |
+| Recipes: Search (`recipes.search.v3`)         | ✅ |
+| Recipe Types (`recipe_types.get.v2`)          | ✅ |
+| Natural Language Processing (`natural-language-processing`) | ✅ |
+| Image Recognition (`image.recognition.v2`)    | ✅ |
+| Profile APIs (foods/recipes/saved meals, diary endpoints) | ⏳ Planned |
+
+> ✅ = implemented in `FatSecretNutritionClient`. ⏳ indicates planned / not yet implemented.
+
 ## CI Integration
 Add the lint/test steps to CI (example uses GitHub Actions):
 
@@ -77,9 +97,4 @@ jobs:
       - run: npm run lint
       - run: npm run test
 ```
-
-## Next Steps
-- Port core DTOs (`Food`, `Recipe`, NLP, etc.) and align naming with Dart `freezed` models.
-- Implement auth adapters (client credentials + OAuth1.0a) with pluggable storage/network stack.
-- Flesh out `FatSecretNutritionClient` methods mirroring Dart for parity and add integration tests using recorded fixtures.
 
