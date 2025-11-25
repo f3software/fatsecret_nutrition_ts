@@ -5,7 +5,7 @@ export interface HttpRequest {
   url: string;
   query?: Record<string, string | number | boolean | undefined>;
   headers?: Record<string, string>;
-  body?: unknown;
+  body?: Record<string, unknown> | string | URLSearchParams;
 }
 
 export interface HttpResponse<T = unknown> {

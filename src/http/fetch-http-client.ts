@@ -17,10 +17,20 @@ function buildUrl(url: string, query?: HttpRequest["query"]): string {
 export class FetchHttpClient implements HttpClient {
   async send<T>(request: HttpRequest): Promise<HttpResponse<T>> {
     const url = buildUrl(request.url, request.query);
+
+    let body: BodyInit | undefined;
+    if (typeof request.body === "string") {
+      body = request.body;
+    } else if (request.body instanceof URLSearchParams) {
+      body = request.body.toString();
+    } else if (request.body && typeof request.body === "object") {
+      body = JSON.stringify(request.body);
+    }
+
     const response = await fetch(url, {
       method: request.method,
       headers: request.headers,
-      body: request.method === "GET" ? undefined : JSON.stringify(request.body),
+      body: request.method === "GET" ? undefined : body,
     });
 
     const data = (await response.json()) as T;

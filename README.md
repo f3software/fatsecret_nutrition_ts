@@ -16,6 +16,26 @@ TypeScript implementation of the FatSecret Nutrition SDK targeting React (web) a
 | `npm run lint` | ESLint over `src`. |
 | `npm run test` | Jest + ts-jest. |
 
+## Platform Adapters
+The client detects the current runtime and picks the appropriate adapter bundle:
+
+```ts
+import {
+  createNodeAdapters,
+  createWebAdapters,
+  createReactNativeAdapters,
+} from "@f3software/fatsecret_nutrition/platform";
+
+const client = new FatSecretNutritionClient({
+  auth,
+  platformAdapters: createNodeAdapters(), // or createWebAdapters()
+});
+```
+
+- **Node / SSR / Jest** – `createNodeAdapters()` uses an in-memory storage map and Node’s crypto module.
+- **Browser** – `createWebAdapters()` leverages `localStorage` and Web Crypto’s `SubtleCrypto`.
+- **React Native** – use `createReactNativeAdapters()` and inject storage (e.g., AsyncStorage) plus a crypto provider (e.g., `react-native-quick-crypto`).
+
 ## Next Steps
 - Port core DTOs (`Food`, `Recipe`, NLP, etc.) and align naming with Dart `freezed` models.
 - Implement auth adapters (client credentials + OAuth1.0a) with pluggable storage/network stack.

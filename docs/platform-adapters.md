@@ -12,17 +12,53 @@
 | Storage (persisting oauth tokens, cached responses) | `StorageAdapter` with async `getItem/setItem/removeItem`. | `localStorage` on web, `AsyncStorage` recommended on RN, `in-memory` fallback for SSR/tests. |
 | Crypto (OAuth1 nonce + signature, base64, random bytes) | `CryptoAdapter` exposing `randomBytes`, `hmacSha1`, `base64Encode`. | Web Crypto (SubtleCrypto) where available; Node `crypto` shim; RN to leverage `expo-crypto` or `react-native-crypto`. |
 
-## Implementation Plan
-1. Define `PlatformAdapterBundle` that packages the three adapters plus platform metadata.
-2. Provide factory helpers:
-   - `createWebAdapters()` – uses `window.crypto` + `localStorage`.
-   - `createReactNativeAdapters()` – expects caller to inject storage + crypto modules (keeps bundle size low).
-   - `createNodeAdapters()` – lazy `import('crypto')` and simple `Map` storage.
-3. Allow `FatSecretNutritionClient` constructor to accept `platformAdapters`; default to auto-detection with safe fallbacks so unit tests continue to work without polyfills.
-4. Document how to plug custom adapters in README (e.g., using `@react-native-async-storage/async-storage` and `react-native-quick-crypto`).
+## Adapter Factories
+```ts
+import {
+  createNodeAdapters,
+  createWebAdapters,
+  createReactNativeAdapters,
+} from "@f3software/fatsecret_nutrition/platform";
 
-Deliverables added in code:
-- `src/platform/types.ts` – adapter interfaces.
-- `src/platform/adapters.ts` – helper factory + placeholders (throws when capability missing).
-- `src/platform/index.ts` – exports for future wiring into the client.
+// Node (SSR, CLI, Jest)
+const nodeAdapters = createNodeAdapters();
+
+// Browser (React, Next.js client components)
+const webAdapters = createWebAdapters();
+
+// React Native — provide your own storage & crypto implementations
+const rnAdapters = createReactNativeAdapters({
+  storage: {
+    getItem: (key) => AsyncStorage.getItem(key),
+    setItem: (key, value) => AsyncStorage.setItem(key, value),
+    removeItem: (key) => AsyncStorage.removeItem(key),
+  },
+  crypto: {
+    randomBytes: (len) => Crypto.getRandomBytesAsync(len),
+    hmacSha1: (key, data) => SHA1.sign(key, data), // implement with react-native-quick-crypto or similar
+    base64Encode: (value) => base64FromString(value),
+  },
+});
+```
+
+Pass any bundle through `platformAdapters` when creating the client:
+
+```ts
+const client = new FatSecretNutritionClient({
+  auth,
+  platformAdapters: nodeAdapters,
+});
+```
+
+## React Native Guidance
+- Use `@react-native-async-storage/async-storage` for the storage adapter.
+- For crypto, pair [`react-native-quick-crypto`](https://github.com/margelo/react-native-quick-crypto) or Expo’s [`expo-crypto`](https://docs.expo.dev/versions/latest/sdk/crypto/) with a lightweight Base64 helper (e.g., `react-native-base64`).
+- Because React Native lacks built-in crypto primitives, `createDefaultPlatformAdapters` will throw and instruct developers to supply their own bundle.
+
+## Default Resolution Rules
+1. Browser environment → `createWebAdapters` (localStorage + Web Crypto).
+2. Node environment → `createNodeAdapters` (in-memory storage + Node crypto).
+3. React Native → throws, requiring explicit configuration for safety.
+
+This keeps desktop/web builds zero-config while ensuring mobile apps wire their secure storage and crypto providers intentionally.
 

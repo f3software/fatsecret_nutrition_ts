@@ -15,8 +15,4 @@ describe("FatSecretNutritionClient", () => {
     expect(client.strategy).toBe("client-credentials");
   });
 
-  it("throws for unimplemented methods to signal parity gaps", async () => {
-    const client = new FatSecretNutritionClient({ auth });
-    await expect(client.search({})).rejects.toThrow("search");
-  });
 });

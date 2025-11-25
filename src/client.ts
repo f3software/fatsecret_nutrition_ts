@@ -3,6 +3,8 @@ import { DEFAULT_ENVIRONMENT } from "./config";
 import type { HttpClient } from "./http";
 import { FetchHttpClient } from "./http";
 import type { SupportedAuthProvider, FatSecretAuthStrategy } from "./auth";
+import { AuthManager } from "./auth";
+import { ApiService } from "./service/api-service";
 import {
   type FoodSearchV3Request,
   type FoodSearchV3Response,
@@ -27,13 +29,16 @@ import {
   type NaturalLanguageProcessingResponse,
   type ImageRecognitionRequest,
   type ImageRecognitionResponse,
+  FatSecretMethod,
 } from "./types";
-import { NotImplementedError } from "./utils/errors";
+import type { PlatformAdapterBundle } from "./platform";
+import { createDefaultPlatformAdapters } from "./platform";
 
 export interface FatSecretClientOptions {
   auth: SupportedAuthProvider;
   environment?: FatSecretEnvironment;
   httpClient?: HttpClient;
+  platformAdapters?: PlatformAdapterBundle;
 }
 
 export type { FatSecretAuthStrategy } from "./auth";
@@ -41,10 +46,25 @@ export type { FatSecretAuthStrategy } from "./auth";
 export class FatSecretNutritionClient {
   private readonly http: HttpClient;
   private readonly env: FatSecretEnvironment;
+  private readonly adapters: PlatformAdapterBundle;
+  private readonly authManager: AuthManager;
+  private readonly apiService: ApiService;
 
   constructor(private readonly options: FatSecretClientOptions) {
     this.env = options.environment ?? DEFAULT_ENVIRONMENT;
     this.http = options.httpClient ?? new FetchHttpClient();
+    this.adapters = options.platformAdapters ?? createDefaultPlatformAdapters();
+    this.authManager = new AuthManager(
+      options.auth,
+      this.http,
+      this.adapters,
+      this.env.oauthBaseUrl,
+    );
+    this.apiService = new ApiService({
+      http: this.http,
+      environment: this.env,
+      authManager: this.authManager,
+    });
   }
 
   get strategy(): FatSecretAuthStrategy {
@@ -55,75 +75,163 @@ export class FatSecretNutritionClient {
    * Mirrors Dart `search` (foods.search.v3).
    */
   async search(
-    _props: FoodSearchV3Request,
+    props: FoodSearchV3Request,
   ): Promise<FoodSearchV3Response | null> {
-    throw new NotImplementedError("search");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodSearchV3Response>(
+        FatSecretMethod.FoodsSearchV3,
+        this.toQuery(props),
+      ),
+    );
   }
 
   /**
    * Mirrors Dart `getById` (food.get.v4).
    */
   async getById(
-    _props: FoodGetByIdRequest,
+    props: FoodGetByIdRequest,
   ): Promise<FoodGetByIdResponse | null> {
-    throw new NotImplementedError("getById");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodGetByIdResponse>(
+        "food.get.v4",
+        this.toQuery(props),
+      ),
+    );
   }
 
   async foodFindIdForBarcode(
-    _props: FoodFindIdForBarcodeRequest,
+    props: FoodFindIdForBarcodeRequest,
   ): Promise<FoodFindIdForBarcodeResponse | null> {
-    throw new NotImplementedError("foodFindIdForBarcode");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodFindIdForBarcodeResponse>(
+        FatSecretMethod.FoodFindIdForBarcode,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async autoComplete(
-    _props: FoodAutoCompleteV2Request,
+    props: FoodAutoCompleteV2Request,
   ): Promise<FoodAutoCompleteV2Response | null> {
-    throw new NotImplementedError("autoComplete");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodAutoCompleteV2Response>(
+        FatSecretMethod.FoodsAutocompleteV2,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async searchBrands(
-    _props: FoodBrandsGetAllV2Request,
+    props: FoodBrandsGetAllV2Request,
   ): Promise<FoodBrandsGetAllV2Response | null> {
-    throw new NotImplementedError("searchBrands");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodBrandsGetAllV2Response>(
+        FatSecretMethod.FoodBrandsGetAllV2,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async getFoodCategories(
-    _props?: FoodCategoriesGetAllV2Request,
+    props?: FoodCategoriesGetAllV2Request,
   ): Promise<FoodCategoriesGetAllV2Response | null> {
-    throw new NotImplementedError("getFoodCategories");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodCategoriesGetAllV2Response>(
+        FatSecretMethod.FoodCategoriesGetAllV2,
+        this.toQuery(props ?? {}),
+      ),
+    );
   }
 
   async getFoodSubCategories(
-    _props: FoodSubCategoriesGetV2Request,
+    props: FoodSubCategoriesGetV2Request,
   ): Promise<FoodSubCategoriesGetV2Response | null> {
-    throw new NotImplementedError("getFoodSubCategories");
+    return this.safeCall(() =>
+      this.apiService.callMethod<FoodSubCategoriesGetV2Response>(
+        FatSecretMethod.FoodSubCategoriesGetV2,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async searchRecipes(
-    _props: RecipeSearchRequest,
+    props: RecipeSearchRequest,
   ): Promise<RecipeSearchResponse | null> {
-    throw new NotImplementedError("searchRecipes");
+    return this.safeCall(() =>
+      this.apiService.callMethod<RecipeSearchResponse>(
+        FatSecretMethod.RecipesSearchV3,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async getRecipeById(
-    _props: RecipeGetByIdRequest,
+    props: RecipeGetByIdRequest,
   ): Promise<RecipeGetByIdResponse | null> {
-    throw new NotImplementedError("getRecipeById");
+    return this.safeCall(() =>
+      this.apiService.callMethod<RecipeGetByIdResponse>(
+        FatSecretMethod.RecipesGetByIdV2,
+        this.toQuery(props),
+      ),
+    );
   }
 
   async getRecipeTypes(): Promise<RecipeTypesResponse | null> {
-    throw new NotImplementedError("getRecipeTypes");
+    return this.safeCall(() =>
+      this.apiService.callMethod<RecipeTypesResponse>(
+        FatSecretMethod.RecipeTypesGetV2,
+      ),
+    );
   }
 
   async processNaturalLanguage(
-    _props: NaturalLanguageProcessingRequest,
+    props: NaturalLanguageProcessingRequest,
   ): Promise<NaturalLanguageProcessingResponse | null> {
-    throw new NotImplementedError("processNaturalLanguage");
+    return this.safeCall(() =>
+      this.apiService.postJson<NaturalLanguageProcessingResponse>(
+        this.env.naturalLanguageProcessingUrl,
+        this.toJson(props),
+      ),
+    );
   }
 
   async imageRecognitionV2(
-    _props: ImageRecognitionRequest,
+    props: ImageRecognitionRequest,
   ): Promise<ImageRecognitionResponse | null> {
-    throw new NotImplementedError("imageRecognitionV2");
+    return this.safeCall(() =>
+      this.apiService.postJson<ImageRecognitionResponse>(
+        this.env.imageRecognitionUrl,
+        this.toJson(props),
+      ),
+    );
+  }
+
+  private async safeCall<T>(fn: () => Promise<T>): Promise<T | null> {
+    try {
+      return await fn();
+    } catch {
+      return null;
+    }
+  }
+
+  private toQuery<T extends object>(
+    params: T | undefined,
+  ): Record<string, QueryValue> {
+    const source = (params ?? {}) as Record<string, QueryValue>;
+    return Object.entries(source).reduce<Record<string, QueryValue>>(
+      (acc, [key, value]) => {
+        if (value !== undefined) {
+          acc[key] = value as QueryValue;
+        }
+        return acc;
+      },
+      {},
+    );
+  }
+
+  private toJson<T extends object>(payload: T): Record<string, unknown> {
+    return { ...((payload ?? {}) as Record<string, unknown>) };
   }
 }
+
+type QueryValue = string | number | boolean | undefined;
