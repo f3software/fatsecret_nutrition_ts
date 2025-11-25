@@ -6,8 +6,11 @@ Run a subset of the FatSecret Nutrition API calls using the TypeScript client.
 1. Copy `examples/cli-demo/env.example` to one of the following:
    - project root `.env` or `.env.local`
    - `examples/cli-demo/.env.local`
-2. Fill in your real FatSecret credentials (client ID, client secret, token URL and API base URL).
-3. Install dependencies in the repo root: `npm install` (or `yarn install`).
+2. Set `FATSECRET_AUTH_STRATEGY` to either:
+   - `client-credentials` (supply client ID/secret + token URL), or
+   - `oauth1` (supply consumer key/secret and optional access token/secret).
+3. Fill in any optional overrides (API URL, image/NLP endpoints) if needed.
+4. Install dependencies in the repo root: `npm install` (or `yarn install`).
 
 ## Run
 

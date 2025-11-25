@@ -6,7 +6,8 @@ import {
   FatSecretNutritionClient,
   createNodeAdapters,
   DEFAULT_ENVIRONMENT,
-  type FatSecretEnvironment
+  type FatSecretEnvironment,
+  type FatSecretClientOptions
 } from "../../src";
 import type {
   FoodAutoCompleteV2Response,
@@ -20,10 +21,25 @@ const __dirname = path.dirname(__filename);
 
 bootstrapEnv();
 
-interface ExampleConfig {
+type Strategy = "client-credentials" | "oauth1";
+
+interface OAuth2Config {
   clientId: string;
   clientSecret: string;
   tokenUrl: string;
+}
+
+interface OAuth1EnvConfig {
+  consumerKey: string;
+  consumerSecret: string;
+  accessToken?: string;
+  accessTokenSecret?: string;
+}
+
+interface ExampleConfig {
+  strategy: Strategy;
+  oauth2?: OAuth2Config;
+  oauth1?: OAuth1EnvConfig;
   apiUrl?: string;
   imageUrl?: string;
   nlpUrl?: string;
@@ -47,14 +63,7 @@ async function main() {
   const environment = buildEnvironment(cfg);
 
   const client = new FatSecretNutritionClient({
-    auth: {
-      strategy: "client-credentials",
-      config: {
-        clientId: cfg.clientId,
-        clientSecret: cfg.clientSecret,
-        tokenUrl: cfg.tokenUrl
-      }
-    },
+    auth: buildAuth(cfg),
     environment,
     platformAdapters: createNodeAdapters()
   });
@@ -133,27 +142,79 @@ function bootstrapEnv() {
 }
 
 function getConfig(): ExampleConfig {
-  const required = [
-    "FATSECRET_CLIENT_ID",
-    "FATSECRET_CLIENT_SECRET",
-    "FATSECRET_TOKEN_URL"
-  ] as const;
+  const strategy =
+    (process.env.FATSECRET_AUTH_STRATEGY as Strategy | undefined) ??
+    "client-credentials";
 
-  for (const key of required) {
+  if (strategy === "client-credentials") {
+    const required = [
+      "FATSECRET_CLIENT_ID",
+      "FATSECRET_CLIENT_SECRET",
+      "FATSECRET_TOKEN_URL"
+    ] as const;
+
+    for (const key of required) {
+      if (!process.env[key]) {
+        throw new Error(
+          `${key} missing. Copy env.example to .env and update credentials.`
+        );
+      }
+    }
+
+    return {
+      strategy,
+      oauth2: {
+        clientId: process.env.FATSECRET_CLIENT_ID!,
+        clientSecret: process.env.FATSECRET_CLIENT_SECRET!,
+        tokenUrl: process.env.FATSECRET_TOKEN_URL!
+      },
+      apiUrl: process.env.FATSECRET_API_URL,
+      imageUrl: process.env.FATSECRET_IMAGE_URL,
+      nlpUrl: process.env.FATSECRET_NLP_URL
+    };
+  }
+
+  const oauth1Keys = ["FATSECRET_CONSUMER_KEY", "FATSECRET_CONSUMER_SECRET"] as const;
+  for (const key of oauth1Keys) {
     if (!process.env[key]) {
       throw new Error(
-        `${key} missing. Copy examples/cli-demo/env.example to .env and update credentials.`
+        `${key} missing. Provide OAuth1 credentials or switch strategy back to client-credentials.`
       );
     }
   }
 
   return {
-    clientId: process.env.FATSECRET_CLIENT_ID!,
-    clientSecret: process.env.FATSECRET_CLIENT_SECRET!,
-    tokenUrl: process.env.FATSECRET_TOKEN_URL!,
+    strategy,
+    oauth1: {
+      consumerKey: process.env.FATSECRET_CONSUMER_KEY!,
+      consumerSecret: process.env.FATSECRET_CONSUMER_SECRET!,
+      accessToken: process.env.FATSECRET_ACCESS_TOKEN,
+      accessTokenSecret: process.env.FATSECRET_ACCESS_TOKEN_SECRET
+    },
     apiUrl: process.env.FATSECRET_API_URL,
     imageUrl: process.env.FATSECRET_IMAGE_URL,
     nlpUrl: process.env.FATSECRET_NLP_URL
+  };
+}
+
+function buildAuth(cfg: ExampleConfig): FatSecretClientOptions["auth"] {
+  if (cfg.strategy === "client-credentials") {
+    if (!cfg.oauth2) {
+      throw new Error("OAuth2 configuration missing");
+    }
+    return {
+      strategy: "client-credentials",
+      config: cfg.oauth2
+    };
+  }
+
+  if (!cfg.oauth1) {
+    throw new Error("OAuth1 configuration missing");
+  }
+
+  return {
+    strategy: "oauth1",
+    config: cfg.oauth1
   };
 }
 

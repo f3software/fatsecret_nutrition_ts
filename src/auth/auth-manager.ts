@@ -34,15 +34,17 @@ export class AuthManager {
       if (!provider.config.tokenUrl && defaultTokenUrl) {
         provider.config.tokenUrl = defaultTokenUrl;
       }
-      const cache = new TokenCache(this.storage, "fatsecret:access_token");
+      const cacheKey = `fatsecret:access_token:${provider.config.clientId}`;
+      const cache = new TokenCache(this.storage, cacheKey);
       this.clientCredentials = new ClientCredentialsAuthenticator(
         provider.config,
         this.http,
         cache,
       );
-    } else {
-      this.oauth1Signer = new OAuth1Signer(provider.config, this.crypto);
+      return;
     }
+
+    this.oauth1Signer = new OAuth1Signer(provider.config, this.crypto);
   }
 
   async getAuth(context: AuthRequestContext): Promise<AuthResult> {
