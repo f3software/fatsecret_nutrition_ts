@@ -209,7 +209,10 @@ export class FatSecretNutritionClient {
   private async safeCall<T>(fn: () => Promise<T>): Promise<T | null> {
     try {
       return await fn();
-    } catch {
+    } catch (error) {
+      if (process.env.FATSECRET_TS_SILENT_ERRORS !== "1") {
+        console.error("FatSecret request failed:", error);
+      }
       return null;
     }
   }

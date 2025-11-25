@@ -16,6 +16,14 @@ TypeScript implementation of the FatSecret Nutrition SDK targeting React (web) a
 | `npm run lint` | ESLint over `src`. |
 | `npm run test` | Jest + ts-jest. |
 
+## Getting Started
+1. Install Node.js 18+ (`nvm install 18 && nvm use 18`).
+2. From `fatsecret_nutrition_ts/`, run `npm install` (or `yarn install`).
+3. Validate the workspace:
+   - `npm run lint`
+   - `npm run test`
+4. Build before publishing: `npm run build`.
+
 ## Platform Adapters
 The client detects the current runtime and picks the appropriate adapter bundle:
 
@@ -35,6 +43,40 @@ const client = new FatSecretNutritionClient({
 - **Node / SSR / Jest** – `createNodeAdapters()` uses an in-memory storage map and Node’s crypto module.
 - **Browser** – `createWebAdapters()` leverages `localStorage` and Web Crypto’s `SubtleCrypto`.
 - **React Native** – use `createReactNativeAdapters()` and inject storage (e.g., AsyncStorage) plus a crypto provider (e.g., `react-native-quick-crypto`).
+
+## Examples
+Use the Node CLI demo to exercise real FatSecret endpoints:
+
+```bash
+cp examples/cli-demo/env.example .env.local   # fill with real credentials
+npm install
+npm run example
+```
+
+The script hits `foods.autocomplete.v2`, `foods.search.v3`, `food.find_id_for_barcode`, and `food_categories.get.v2`. These are real API calls—watch your rate limits.
+Some endpoints require premium scopes (`premier`, `barcode`, etc.). If you see “Missing scope” errors, request those scopes for your application in the FatSecret developer portal.
+
+## CI Integration
+Add the lint/test steps to CI (example uses GitHub Actions):
+
+```yaml
+name: fatsecret-ts
+on:
+  push:
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - run: npm install
+      - run: npm run lint
+      - run: npm run test
+```
 
 ## Next Steps
 - Port core DTOs (`Food`, `Recipe`, NLP, etc.) and align naming with Dart `freezed` models.
