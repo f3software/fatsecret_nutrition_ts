@@ -87,5 +87,30 @@ describe("ClientCredentialsAuthenticator", () => {
     expect(tokenTwo).toBe("second-token");
     expect(http.sendMock).toHaveBeenCalledTimes(2);
   });
+
+  it("sends configured scopes when requesting tokens", async () => {
+    const http = new MockHttpClient();
+    const cache = new TokenCache(new MemoryStorage(), "scope-cache");
+    const auth = new ClientCredentialsAuthenticator(
+      {
+        ...config,
+        scopes: ["basic", "premier", "barcode"],
+      },
+      http,
+      cache,
+    );
+
+    await auth.getAccessToken();
+
+    expect(http.sendMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.any(URLSearchParams),
+      }),
+    );
+
+    const params = http.sendMock.mock.calls[0][0]
+      ?.body as URLSearchParams;
+    expect(params.get("scope")).toBe("basic premier barcode");
+  });
 });
 

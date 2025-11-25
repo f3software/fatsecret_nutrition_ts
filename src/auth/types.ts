@@ -2,6 +2,7 @@ export interface ClientCredentialsConfig {
   clientId: string;
   clientSecret: string;
   tokenUrl?: string;
+  scopes?: string | string[];
 }
 
 export interface OAuth1Config {

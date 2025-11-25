@@ -34,9 +34,10 @@ export class ClientCredentialsAuthenticator {
       throw new Error("Client credentials tokenUrl is required");
     }
 
+    const scope = this.normalizeScopes(this.config.scopes);
     const body = new URLSearchParams({
       grant_type: "client_credentials",
-      scope: DEFAULT_SCOPE,
+      scope,
     });
 
     const response: HttpResponse<TokenResponse> = await this.http.send({
@@ -72,6 +73,16 @@ export class ClientCredentialsAuthenticator {
       return btoa(credentials);
     }
     throw new Error("No base64 encoder available for credentials");
+  }
+
+  private normalizeScopes(scopes?: string | string[]): string {
+    if (!scopes || (Array.isArray(scopes) && scopes.length === 0)) {
+      return DEFAULT_SCOPE;
+    }
+    if (typeof scopes === "string") {
+      return scopes.trim() || DEFAULT_SCOPE;
+    }
+    return scopes.join(" ");
   }
 }
 

@@ -27,6 +27,7 @@ interface OAuth2Config {
   clientId: string;
   clientSecret: string;
   tokenUrl: string;
+  scopes?: string;
 }
 
 interface OAuth1EnvConfig {
@@ -166,7 +167,8 @@ function getConfig(): ExampleConfig {
       oauth2: {
         clientId: process.env.FATSECRET_CLIENT_ID!,
         clientSecret: process.env.FATSECRET_CLIENT_SECRET!,
-        tokenUrl: process.env.FATSECRET_TOKEN_URL!
+        tokenUrl: process.env.FATSECRET_TOKEN_URL!,
+        scopes: process.env.FATSECRET_SCOPES,
       },
       apiUrl: process.env.FATSECRET_API_URL,
       imageUrl: process.env.FATSECRET_IMAGE_URL,
@@ -226,8 +228,8 @@ function buildEnvironment(cfg: ExampleConfig): FatSecretEnvironment {
   if (cfg.imageUrl) {
     overrides.imageRecognitionUrl = cfg.imageUrl;
   }
-  if (cfg.tokenUrl) {
-    overrides.oauthBaseUrl = cfg.tokenUrl;
+  if (cfg.strategy === "client-credentials" && cfg.oauth2?.tokenUrl) {
+    overrides.oauthBaseUrl = cfg.oauth2.tokenUrl;
   }
   if (cfg.nlpUrl) {
     overrides.naturalLanguageProcessingUrl = cfg.nlpUrl;

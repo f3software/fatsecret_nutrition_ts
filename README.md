@@ -54,7 +54,7 @@ npm run example
 ```
 
 The script hits `foods.autocomplete.v2`, `foods.search.v3`, `food.find_id_for_barcode`, and `food_categories.get.v2`. These are real API calls—watch your rate limits.
-Set `FATSECRET_AUTH_STRATEGY` to `client-credentials` (needs OAuth2 client ID/secret + scopes) or `oauth1` (needs consumer key/secret and optional access token). Some endpoints require premium scopes (`premier`, `barcode`, etc.); request those in the FatSecret portal if you see “Missing scope” errors.
+Set `FATSECRET_AUTH_STRATEGY` to `client-credentials` (needs OAuth2 client ID/secret + scopes via `FATSECRET_SCOPES`, default `basic premier barcode`) or `oauth1` (needs consumer key/secret and optional access token). Some endpoints require premium scopes (`premier`, `barcode`, etc.); request those in the FatSecret portal if you see “Missing scope” errors.
 
 ## CI Integration
 Add the lint/test steps to CI (example uses GitHub Actions):

@@ -9,8 +9,9 @@ Run a subset of the FatSecret Nutrition API calls using the TypeScript client.
 2. Set `FATSECRET_AUTH_STRATEGY` to either:
    - `client-credentials` (supply client ID/secret + token URL), or
    - `oauth1` (supply consumer key/secret and optional access token/secret).
-3. Fill in any optional overrides (API URL, image/NLP endpoints) if needed.
-4. Install dependencies in the repo root: `npm install` (or `yarn install`).
+3. For OAuth2, set `FATSECRET_SCOPES` (space-delimited, default `basic premier barcode`).
+4. Fill in any optional overrides (API URL, image/NLP endpoints) if needed.
+5. Install dependencies in the repo root: `npm install` (or `yarn install`).
 
 ## Run
 
