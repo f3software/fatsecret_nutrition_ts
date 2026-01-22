@@ -1,6 +1,6 @@
 {
   "name": "@f3software/fatsecret_nutrition",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TypeScript client for the FatSecret Nutrition API with React and React Native support.",
   "keywords": [
     "fatsecret",
