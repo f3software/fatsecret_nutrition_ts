@@ -1,17 +1,17 @@
-import type { Food } from "./shared";
+import type { FoodResponse, EatenFood } from "./nlp";
 
 export interface ImageRecognitionRequest {
   image_b64: string;
   region?: string;
   language?: string;
   include_food_data?: boolean;
+  eaten_foods?: EatenFood[];
 }
 
-export interface ImageRecognitionFoodMatch {
-  confidence?: number;
-  food?: Food;
-}
-
+/**
+ * Response from Image Recognition endpoint
+ * Uses the same FoodResponse structure as NLP
+ */
 export interface ImageRecognitionResponse {
-  results?: ImageRecognitionFoodMatch[];
+  food_response?: FoodResponse[];
 }

@@ -86,7 +86,8 @@ export interface FoodBrand {
 
 export interface FoodBrandsGetAllV2Response {
   food_brands?: {
-    brand?: FoodBrand[];
+    food_brand?: FoodBrand[] | FoodBrand;
+    brand?: FoodBrand[] | FoodBrand; // Alias for compatibility
     max_results?: string;
     total_results?: string;
     page_number?: string;
@@ -102,6 +103,7 @@ export interface FoodCategoriesGetAllV2Request {
 export interface FoodCategory {
   food_category_id: string;
   food_category_name: string;
+  food_category_description?: string;
 }
 
 export interface FoodCategoriesGetAllV2Response {
