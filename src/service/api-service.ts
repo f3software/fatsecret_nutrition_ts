@@ -58,6 +58,7 @@ export class ApiService {
       url,
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         ...(auth.headers ?? {}),
       },
       body,

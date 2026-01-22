@@ -33,11 +33,50 @@ export class FetchHttpClient implements HttpClient {
       body: request.method === "GET" ? undefined : body,
     });
 
-    const data = (await response.json()) as T;
     const headers: Record<string, string> = {};
     response.headers.forEach((value, key) => {
       headers[key] = value;
     });
+
+    // Check content-type before parsing JSON
+    const contentType =
+      headers["content-type"] || headers["Content-Type"] || "";
+    const isJson =
+      contentType.includes("application/json") ||
+      contentType.includes("text/json");
+
+    // Read response as text first so we can provide better error messages
+    // and handle both JSON and non-JSON responses
+    const text = await response.text();
+
+    let data: T;
+
+    if (!response.ok) {
+      // For non-OK responses, provide detailed error information
+      throw new Error(
+        `HTTP ${response.status}: ${response.statusText}. Content-Type: ${contentType || "unknown"}. Response: ${text.substring(0, 500)}`,
+      );
+    }
+
+    if (isJson) {
+      try {
+        data = JSON.parse(text) as T;
+      } catch (error) {
+        throw new Error(
+          `Failed to parse JSON response. Status: ${response.status}, Content-Type: ${contentType}, Response preview: ${text.substring(0, 200)}`,
+        );
+      }
+    } else {
+      // If not marked as JSON but response is OK, try to parse anyway
+      // (some APIs don't set content-type correctly)
+      try {
+        data = JSON.parse(text) as T;
+      } catch {
+        throw new Error(
+          `Expected JSON response but received ${contentType || "unknown content type"}. Response preview: ${text.substring(0, 200)}`,
+        );
+      }
+    }
 
     return {
       status: response.status,

@@ -210,8 +210,22 @@ export class FatSecretNutritionClient {
     try {
       return await fn();
     } catch (error) {
-      if (process.env.FATSECRET_TS_SILENT_ERRORS !== "1") {
-        console.error("FatSecret request failed:", error);
+      // Always log errors in test environment or when silent mode is disabled
+      const isSilent = process.env.FATSECRET_TS_SILENT_ERRORS === "1";
+      const isTest =
+        process.env.NODE_ENV === "test" ||
+        process.env.JEST_WORKER_ID !== undefined;
+
+      if (!isSilent || isTest) {
+        const errorDetails =
+          error instanceof Error
+            ? {
+                message: error.message,
+                stack: error.stack,
+                name: error.name,
+              }
+            : { error };
+        console.error("FatSecret request failed:", errorDetails);
       }
       return null;
     }

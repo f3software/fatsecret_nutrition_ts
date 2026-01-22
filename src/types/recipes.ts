@@ -17,12 +17,30 @@ export interface RecipeDirection {
   recipe_direction: string;
 }
 
+export interface RecipeNutrition {
+  calories: string;
+  carbohydrate: string;
+  protein: string;
+  fat: string;
+}
+
+export interface RecipeIngredients {
+  ingredient: string[];
+}
+
+export interface RecipeTypes {
+  recipe_type: string[];
+}
+
 export interface RecipeSummary {
   recipe_id: string;
   recipe_name: string;
   recipe_description?: string;
   recipe_image?: string;
   recipe_url?: string;
+  recipe_ingredients?: RecipeIngredients;
+  recipe_nutrition?: RecipeNutrition;
+  recipe_types?: RecipeTypes;
 }
 
 export interface RecipeSearchResponse {
@@ -40,12 +58,42 @@ export interface RecipeGetByIdRequest {
   language?: string;
 }
 
+export interface RecipeServing {
+  calories?: string;
+  carbohydrate?: string;
+  protein?: string;
+  fat?: string;
+  saturated_fat?: string;
+  polyunsaturated_fat?: string;
+  monounsaturated_fat?: string;
+  cholesterol?: string;
+  sodium?: string;
+  potassium?: string;
+  fiber?: string;
+  sugar?: string;
+}
+
+export interface RecipeCategory {
+  recipe_category_name: string;
+  recipe_category_url?: string;
+}
+
 export interface Recipe {
   recipe_id: string;
   recipe_name: string;
   recipe_type?: string;
   recipe_url?: string;
   recipe_description?: string;
+  number_of_servings?: string;
+  grams_per_portion?: string;
+  preparation_time_min?: string;
+  cooking_time_min?: string;
+  recipe_types?: {
+    recipe_type: string[];
+  };
+  recipe_categories?: {
+    recipe_category: RecipeCategory[];
+  };
   recipe_images?: {
     recipe_image: string[];
   };
@@ -54,6 +102,9 @@ export interface Recipe {
   };
   ingredients?: {
     ingredient: RecipeIngredient[];
+  };
+  serving_sizes?: {
+    serving: RecipeServing;
   };
 }
 

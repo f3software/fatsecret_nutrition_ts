@@ -17,8 +17,10 @@ class MockHttpClient implements HttpClient {
 const environment: FatSecretEnvironment = {
   apiBaseUrl: "https://platform.fatsecret.com/rest",
   oauthBaseUrl: "https://oauth.fatsecret.com/connect/token",
-  imageRecognitionUrl: "https://platform.fatsecret.com/rest/2.0/image.recognition",
-  naturalLanguageProcessingUrl: "https://platform.fatsecret.com/rest/1.0/natural-language-processing",
+  imageRecognitionUrl:
+    "https://platform.fatsecret.com/rest/image-recognition/v2",
+  naturalLanguageProcessingUrl:
+    "https://platform.fatsecret.com/rest/natural-language-processing/v1",
 };
 
 describe("ApiService", () => {
